@@ -24,24 +24,14 @@ class SysInfo{
             std::cerr<<"Error : "<<e.what()<<std::endl;
         }
     }
-    float sizeMB(const std::string& path,std::mutex& mtx){
+    float size(const std::string& path,std::mutex& mtx){
         try{
             auto sizeMB=fs::file_size(path)/(1024.0f*1024.0f);
+            auto sizeGB=sizeMB/1024.0f;
             std::lock_guard<std::mutex> lock(mtx);  //synchronize output to console
-            std::cout<<"File size: "<<sizeMB<<" MB"<<std::endl;
+            std::cout<<"File size: "<<sizeMB<<" MB"<<" or "<<sizeGB<<" GB"<<std::endl;
             //return sizeMB;
         }catch(const fs::filesystem_error &e){
-            std::cerr<<"Error : "<<e.what()<<std::endl;
-        }
-        return 0.0f;
-    }
-    float sizeGB(const std::string& path,std::mutex& mtx){
-        try{
-            auto sizeGB=fs::file_size(path)/(1024.0f*1024.0f*1024.0f);
-            std::lock_guard<std::mutex> lock(mtx);  // Synchronize output to console 
-            std::cout<<"File size: "<<sizeGB<<" GB"<<std::endl;
-            //return sizeGB;
-        }catch(fs::filesystem_error &e){
             std::cerr<<"Error : "<<e.what()<<std::endl;
         }
         return 0.0f;
@@ -76,16 +66,14 @@ void runParallel(SysInfo& obj,const std::string& path){
     std::mutex mtx;
 
     std::thread t1(&SysInfo::Describe,&obj,path,std::ref(mtx));
-    std::thread t2(&SysInfo::sizeMB,&obj,path,std::ref(mtx));
-    std::thread t3(&SysInfo::sizeGB,&obj,path,std::ref(mtx));
-    std::thread t4(&SysInfo::Modification_details,&obj,path,std::ref(mtx));
-    std::thread t5(&SysInfo::Extension,&obj,path,std::ref(mtx));
+    std::thread t2(&SysInfo::size,&obj,path,std::ref(mtx));
+    std::thread t3(&SysInfo::Modification_details,&obj,path,std::ref(mtx));
+    std::thread t4(&SysInfo::Extension,&obj,path,std::ref(mtx));
 
     t1.join();
     t2.join();
     t3.join();
     t4.join();
-    t5.join();
 }
 
 
