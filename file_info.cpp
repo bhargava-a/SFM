@@ -100,5 +100,6 @@ int main() {
     }
     std::cout<<std::fixed<<std::setprecision(2);
     runParallel(obj,dir);
+    system("pause");
     return 0;
 }
